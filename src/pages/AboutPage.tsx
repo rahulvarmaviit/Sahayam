@@ -45,7 +45,7 @@ const AboutPage: React.FC = () => {
               transition={{ duration: 0.6 }}
             >
               <img 
-                src="https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/1170x800/FFB563/2A2D34?text=Our+Community" 
+                src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=1170&auto=format&fit=crop" 
                 alt="Community support in India" 
                 className="rounded-xl shadow-lg"
               />

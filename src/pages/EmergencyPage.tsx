@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DollarSign, Calendar, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
-import api from '../services/api';
-import { Cause } from '../types';
+import { causesApi } from '../services/api';
+import { Cause } from '../types/index';
 
 const EmergencyPage: React.FC = () => {
   const [urgentCauses, setUrgentCauses] = useState<Cause[]>([]);
@@ -12,8 +12,12 @@ const EmergencyPage: React.FC = () => {
   useEffect(() => {
     const fetchUrgentCauses = async () => {
       try {
-        const response = await api.get('/api/causes/urgent'); // Assuming an endpoint for urgent causes
-        setUrgentCauses(response.data);
+        const response = await causesApi.getEmergencyCauses();
+        if (response.success) {
+          setUrgentCauses(response.data);
+        } else {
+          setError(response.message || 'Failed to fetch urgent causes. Please try again later.');
+        }
       } catch (err) {
         setError('Failed to fetch urgent causes. Please try again later.');
         console.error('Error fetching urgent causes:', err);
@@ -28,7 +32,7 @@ const EmergencyPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl text-gray-600">Loading urgent causes...</p>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -58,7 +62,7 @@ const EmergencyPage: React.FC = () => {
               <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
                 <div
                   className="bg-red-500 h-2.5 rounded-full"
-                  style={{ width: `${((cause.raisedAmount / cause.targetAmount) * 100).toFixed(2)}%` }}
+                  style={{ width: `${Math.min((cause.raisedAmount / cause.targetAmount) * 100, 100).toFixed(2)}%` }}
                 ></div>
               </div>
               <div className="flex items-center text-gray-700 mb-2">

@@ -74,8 +74,8 @@ const LoginPage: React.FC = () => {
           {/* Image Section */}
           <div className="hidden md:block">
             <img 
-              src="https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/987x1200/FF8C42/FFFCF9?text=Welcome" 
-              alt="Children smiling"
+              src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=987&auto=format&fit=crop" 
+              alt="Happy group of people"
               className="w-full h-full object-cover"
             />
           </div>

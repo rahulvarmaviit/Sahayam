@@ -44,32 +44,32 @@ const HeroSection: React.FC = () => {
               </div>
               <div className="flex items-center mb-4">
                 <img 
-                  src="https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400/FF6B35/FFFCF9?text=Help+Rohit" 
+                  src="https://images.unsplash.com/photo-1519993358394-27ccc7032429?q=80&w=200&auto=format&fit=crop" 
                   alt="Child in need of help" 
                   className="w-16 h-16 rounded-xl object-cover"
                 />
                 <div className="ml-4">
-                  <h4 className="font-bold">Rohit's Heart Surgery</h4>
-                  <p className="text-gray-600 text-sm">8 years old, Mumbai</p>
+                  <h4 className="font-bold">Priya's Heart Surgery</h4>
+                  <p className="text-gray-600 text-sm">12 years old, Mumbai</p>
                 </div>
               </div>
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Raised: ₹1,20,000</span>
-                  <span>Goal: ₹3,50,000</span>
+                  <span>Raised: ₹1,75,000</span>
+                  <span>Goal: ₹4,50,000</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <motion.div 
                     className="bg-primary h-2.5 rounded-full"
                     initial={{ width: 0 }}
-                    animate={{ width: '34%' }}
+                    animate={{ width: '39%' }}
                     transition={{ duration: 1, delay: 0.5 }}
                   />
                 </div>
               </div>
-              <button className="w-full bg-primary text-white py-2 rounded-lg hover:bg-accent transition-colors">
+              <a href="/causes/4" className="w-full bg-primary text-white py-2 rounded-lg hover:bg-accent transition-colors text-center block">
                 Donate Now
-              </button>
+              </a>
             </div>
             <motion.div 
               className="absolute -bottom-6 -right-6 bg-white rounded-xl p-4 shadow-lg flex items-center"

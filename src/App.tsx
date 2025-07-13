@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import CausePage from './pages/CausePage';
 import EmergencyPage from './pages/EmergencyPage';
+import CauseDetailPage from './pages/CauseDetailPage';
 
 function App() {
   return (
@@ -17,10 +18,11 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/causes" element={<CausePage />} />
-        <Route path="/emergency" element={<EmergencyPage />} />
-      </Routes>
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/causes" element={<CausePage />} />
+          <Route path="/causes/:id" element={<CauseDetailPage />} />
+          <Route path="/emergency" element={<EmergencyPage />} />
+        </Routes>
       </main>
       <Footer />
     </div>

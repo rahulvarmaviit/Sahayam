@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Cause = require('../models/Cause');
+const { auth, adminAuth } = require('../middleware/auth');
 
-// Get all causes
+// Get all causes (public)
 router.get('/', async (req, res) => {
   try {
     const { category, isUrgent, limit = 10, page = 1 } = req.query;
@@ -34,7 +35,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get emergency causes
+// Get emergency causes (public)
 router.get('/emergency', async (req, res) => {
   try {
     const emergencyCauses = await Cause.find({
@@ -60,7 +61,7 @@ router.get('/emergency', async (req, res) => {
   }
 });
 
-// Get single cause
+// Get single cause (public)
 router.get('/:id', async (req, res) => {
   try {
     const cause = await Cause.findById(req.params.id);
@@ -85,10 +86,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new cause
-router.post('/', async (req, res) => {
+// Create new cause (admin only)
+router.post('/', auth, adminAuth, async (req, res) => {
   try {
-    const causeData = req.body;
+    const causeData = { ...req.body, createdBy: req.user._id };
     
     const cause = new Cause(causeData);
     await cause.save();
@@ -108,8 +109,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update cause
-router.put('/:id', async (req, res) => {
+// Update cause (admin only)
+router.put('/:id', auth, adminAuth, async (req, res) => {
   try {
     const cause = await Cause.findByIdAndUpdate(
       req.params.id,
@@ -139,8 +140,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete cause (soft delete)
-router.delete('/:id', async (req, res) => {
+// Delete cause (soft delete, admin only)
+router.delete('/:id', auth, adminAuth, async (req, res) => {
   try {
     const cause = await Cause.findByIdAndUpdate(
       req.params.id,

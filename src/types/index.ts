@@ -10,6 +10,7 @@ export interface Cause {
   isVerified: boolean;
   isUrgent?: boolean;
   deadline?: string;
+  location?: string;
   createdAt: string;
   updatedAt: string;
 }

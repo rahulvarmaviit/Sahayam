@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import CauseCard from './CauseCard';
 import { Cause } from '../types';
 import { causesApi } from '../services/api';
+import { Link } from 'react-router-dom';
 
 const CausesSection: React.FC = () => {
   const [causes, setCauses] = useState<Cause[]>([]);
@@ -21,12 +22,6 @@ const CausesSection: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDonate = (causeId: string) => {
-    // Navigate to donation page or open modal
-    const element = document.getElementById('donate');
-    element?.scrollIntoView({ behavior: 'smooth' });
   };
 
   if (loading) {
@@ -65,7 +60,7 @@ const CausesSection: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
-              <CauseCard cause={cause} onDonate={handleDonate} />
+              <CauseCard cause={cause} />
             </motion.div>
           ))}
         </div>
@@ -76,9 +71,9 @@ const CausesSection: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <button className="bg-white border-2 border-primary text-primary px-8 py-3 rounded-full font-semibold hover:bg-primary hover:text-white transition-colors">
+          <Link to="/causes" className="bg-white border-2 border-primary text-primary px-8 py-3 rounded-full font-semibold hover:bg-primary hover:text-white transition-colors">
             View All Causes
-          </button>
+          </Link>
         </motion.div>
       </div>
     </section>

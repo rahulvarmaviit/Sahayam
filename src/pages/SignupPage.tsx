@@ -16,7 +16,7 @@ const SignupPage: React.FC = () => {
           {/* Image Section */}
           <div className="hidden md:block">
             <img 
-              src="https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/987x1200/FFB563/FFFCF9?text=Join+Us" 
+              src="https://images.unsplash.com/photo-1524253482453-3fed8e2fe427?q=80&w=987&auto=format&fit=crop" 
               alt="Community hands together"
               className="w-full h-full object-cover"
             />

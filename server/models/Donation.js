@@ -6,6 +6,11 @@ const donationSchema = new mongoose.Schema({
     ref: 'Cause',
     required: true
   },
+  donorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   donorName: {
     type: String,
     required: true,
@@ -73,19 +78,30 @@ donationSchema.index({ paymentStatus: 1 });
 donationSchema.index({ createdAt: -1 });
 
 // Update cause statistics after successful donation
-donationSchema.post('save', async function() {
-  if (this.paymentStatus === 'completed') {
-    const Cause = mongoose.model('Cause');
-    await Cause.findByIdAndUpdate(
-      this.causeId,
-      {
-        $inc: {
-          raisedAmount: this.amount,
-          donorCount: 1
+donationSchema.post('save', async function(doc, next) {
+  // Check if the document is new or if paymentStatus was modified to 'completed'
+  const isCompleted = this.isNew 
+    ? this.paymentStatus === 'completed' 
+    : this.isModified('paymentStatus') && this.paymentStatus === 'completed';
+
+  if (isCompleted) {
+    try {
+      const Cause = mongoose.model('Cause');
+      await Cause.findByIdAndUpdate(
+        this.causeId,
+        {
+          $inc: {
+            raisedAmount: this.amount,
+            donorCount: 1
+          }
         }
-      }
-    );
+      );
+    } catch (error) {
+      console.error('Error updating cause stats after donation:', error);
+      // Decide how to handle this error. Maybe log it.
+    }
   }
+  next();
 });
 
 module.exports = mongoose.model('Donation', donationSchema);

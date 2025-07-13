@@ -2,49 +2,95 @@ const express = require('express');
 const router = express.Router();
 const Donation = require('../models/Donation');
 const Cause = require('../models/Cause');
+const User = require('../models/User');
+const { auth } = require('../middleware/auth');
 
-// Create new donation
-router.post('/', async (req, res) => {
+// Initiate a new donation (requires authentication)
+router.post('/initiate', auth, async (req, res) => {
   try {
-    const donationData = req.body;
+    const { causeId, amount, message, isAnonymous, paymentMethod } = req.body;
     
-    // Verify cause exists
-    const cause = await Cause.findById(donationData.causeId);
-    if (!cause) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cause not found'
-      });
+    // Validate cause
+    const cause = await Cause.findById(causeId);
+    if (!cause || !cause.isActive) {
+      return res.status(404).json({ success: false, message: 'Active cause not found' });
     }
     
-    // Create donation
+    // Create a pending donation
     const donation = new Donation({
-      ...donationData,
-      paymentStatus: 'completed', // For demo purposes, setting as completed
-      transactionId: `TXN_${Date.now()}`,
-      ipAddress: req.ip
+      causeId,
+      donorId: req.user._id,
+      donorName: isAnonymous ? 'Anonymous' : req.user.name,
+      donorEmail: req.user.email,
+      donorPhone: req.user.phone,
+      amount,
+      message,
+      isAnonymous,
+      paymentMethod,
+      paymentStatus: 'pending',
+      transactionId: `TXN_PENDING_${Date.now()}`,
+      ipAddress: req.ip,
     });
     
     await donation.save();
     
-    // The post-save hook will automatically update the cause statistics
-    
+    // In a real app, you'd now redirect to a payment gateway
+    // Here, we just return the pending donation details
     res.status(201).json({
       success: true,
       data: donation,
-      message: 'Donation created successfully'
+      message: 'Donation initiated successfully. Awaiting payment confirmation.',
     });
   } catch (error) {
-    console.error('Error creating donation:', error);
-    res.status(400).json({
-      success: false,
-      message: 'Error creating donation',
-      error: error.message
-    });
+    console.error('Error initiating donation:', error);
+    res.status(400).json({ success: false, message: 'Error initiating donation', error: error.message });
   }
 });
 
-// Get donations by cause
+// Verify a donation (simulates payment gateway callback)
+router.post('/verify/:donationId', auth, async (req, res) => {
+  try {
+    const { donationId } = req.params;
+    
+    const donation = await Donation.findById(donationId);
+    
+    if (!donation) {
+      return res.status(404).json({ success: false, message: 'Donation not found' });
+    }
+    
+    // Ensure the user verifying is the one who created it
+    if (donation.donorId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to verify this donation.' });
+    }
+    
+    if (donation.paymentStatus === 'completed') {
+      return res.status(400).json({ success: false, message: 'This donation has already been completed.' });
+    }
+    
+    // Update donation status to 'completed'
+    donation.paymentStatus = 'completed';
+    donation.transactionId = `TXN_COMPLETED_${Date.now()}`;
+    await donation.save(); // This will trigger the post-save hook to update Cause stats
+    
+    // Update user's donation history
+    await User.findByIdAndUpdate(req.user._id, {
+      $inc: { totalDonated: donation.amount },
+      $push: { donationHistory: donation._id },
+    });
+    
+    res.json({
+      success: true,
+      data: donation,
+      message: 'Thank you! Your donation has been successfully processed.',
+    });
+  } catch (error) {
+    console.error('Error verifying donation:', error);
+    res.status(500).json({ success: false, message: 'Error verifying donation', error: error.message });
+  }
+});
+
+
+// Get donations by cause (public)
 router.get('/cause/:causeId', async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -53,22 +99,14 @@ router.get('/cause/:causeId', async (req, res) => {
       causeId: req.params.causeId,
       paymentStatus: 'completed'
     })
-    .select('-donorEmail -donorPhone -ipAddress') // Hide sensitive info
+    .select('-donorEmail -donorPhone -ipAddress')
     .sort({ createdAt: -1 })
     .limit(parseInt(limit))
     .skip((parseInt(page) - 1) * parseInt(limit));
     
-    // Hide donor name if anonymous
-    const sanitizedDonations = donations.map(donation => {
-      if (donation.isAnonymous) {
-        donation.donorName = 'Anonymous';
-      }
-      return donation;
-    });
-    
     res.json({
       success: true,
-      data: sanitizedDonations,
+      data: donations,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -87,7 +125,7 @@ router.get('/cause/:causeId', async (req, res) => {
   }
 });
 
-// Get recent donations (for homepage/stats)
+// Get recent donations (public)
 router.get('/recent', async (req, res) => {
   try {
     const { limit = 5 } = req.query;
@@ -100,49 +138,15 @@ router.get('/recent', async (req, res) => {
     .sort({ createdAt: -1 })
     .limit(parseInt(limit));
     
-    // Hide donor name if anonymous
-    const sanitizedDonations = donations.map(donation => {
-      if (donation.isAnonymous) {
-        donation.donorName = 'Anonymous';
-      }
-      return donation;
-    });
-    
     res.json({
       success: true,
-      data: sanitizedDonations
+      data: donations
     });
   } catch (error) {
     console.error('Error fetching recent donations:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching recent donations'
-    });
-  }
-});
-
-// Get donation by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const donation = await Donation.findById(req.params.id)
-      .populate('causeId', 'title category targetAmount');
-    
-    if (!donation) {
-      return res.status(404).json({
-        success: false,
-        message: 'Donation not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      data: donation
-    });
-  } catch (error) {
-    console.error('Error fetching donation:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching donation'
     });
   }
 });
